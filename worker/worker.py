@@ -5,6 +5,7 @@ import boto3
 import redis
 from datetime import datetime
 from dotenv import load_dotenv
+import sys
 
 from config import (
     QUEUE_URL, DATABASE_URL, REDIS_HOST, REDIS_PORT,
@@ -31,13 +32,20 @@ redis_client = redis.Redis(
     port=REDIS_PORT
 )
 
-sqs = boto3.client(
-    'sqs',
-    endpoint_url=SQS_ENDPOINT,
-    region_name=SQS_REGION,
-    aws_access_key_id=SQS_ACCESS_KEY,
-    aws_secret_access_key=SQS_SECRET_KEY
-)
+# Initialize SQS client
+sqs_config = {
+    'region_name': SQS_REGION,
+}
+
+# Only add endpoint URL and credentials for local development
+if 'elasticmq' in SQS_ENDPOINT:
+    sqs_config.update({
+        'endpoint_url': SQS_ENDPOINT,
+        'aws_access_key_id': SQS_ACCESS_KEY,
+        'aws_secret_access_key': SQS_SECRET_KEY
+    })
+
+sqs = boto3.client('sqs', **sqs_config)
 
 def get_db_session():
     engine = create_engine(DATABASE_URL)
@@ -182,7 +190,7 @@ def main():
                 QueueUrl=QUEUE_URL,
                 MaxNumberOfMessages=1,
                 WaitTimeSeconds=20,
-                VisibilityTimeout=30  # Match the queue's visibility timeout
+                VisibilityTimeout=60  # Increased from 30 to 60 seconds
             )
             logger.info("SQS response: %s", response)
 
@@ -209,4 +217,10 @@ def main():
             time.sleep(5)  # Wait before retrying
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Worker stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        sys.exit(1)

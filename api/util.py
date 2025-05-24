@@ -161,19 +161,19 @@ def send_notification(todo_id, action):
             QueueUrl=QUEUE_URL,
             MessageBody=json.dumps(message)
         )
-        print(f"Notification sent: {message}")
+        logger.info(f"Notification sent: {message}")
         return response
     except Exception as e:
-        print(f"Error sending notification: {e}")
+        logger.error(f"Error sending notification: {e}")
         return None
 
 def update_cache(todo_id, todo_data):
     """Update Redis cache with todo data"""
     try:
         redis_client.set(f"todo:{todo_id}", json.dumps(todo_data))
-        print(f"Cache updated for todo {todo_id}")
+        logger.info(f"Cache updated for todo {todo_id}")
     except Exception as e:
-        print(f"Error updating cache: {e}")
+        logger.error(f"Error updating cache: {e}")
 
 def get_from_cache(todo_id):
     """Get todo data from Redis cache"""
@@ -181,13 +181,13 @@ def get_from_cache(todo_id):
         data = redis_client.get(f"todo:{todo_id}")
         return json.loads(data) if data else None
     except Exception as e:
-        print(f"Error getting from cache: {e}")
+        logger.error(f"Error getting from cache: {e}")
         return None
 
 def delete_from_cache(todo_id):
     """Delete todo data from Redis cache"""
     try:
         redis_client.delete(f"todo:{todo_id}")
-        print(f"Cache deleted for todo {todo_id}")
+        logger.info(f"Cache deleted for todo {todo_id}")
     except Exception as e:
-        print(f"Error deleting from cache: {e}")
+        logger.error(f"Error deleting from cache: {e}")
