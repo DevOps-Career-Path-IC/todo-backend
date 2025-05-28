@@ -34,6 +34,9 @@ SQS_REGION = os.getenv('SQS_REGION', 'ap-southeast-1')
 QUEUE_NAME = os.getenv('SQS_QUEUE_NAME')
 QUEUE_URL = os.getenv('SQS_QUEUE_URL')
 DLQ_URL = os.getenv('SQS_DLQ_URL')
+SQS_ACCESS_KEY = os.getenv('SQS_ACCESS_KEY')
+SQS_SECRET_KEY = os.getenv('SQS_SECRET_KEY')
+
 
 # SQS setup
 def ensure_sqs_queue():
